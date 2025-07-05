@@ -1,90 +1,113 @@
 package app
 
-// type serviceProvider struct {
-// 	pgConfig      config.PgConfig
-// 	httpConfig    config.HTTPConfig
-// 	soursesConfig config.Sourses
-// 	redisConfig   config.RedisConfig
+import (
+	"app/market/internal/config"
+	"app/market/pkg/closer"
+	"app/market/pkg/db"
+	"app/market/pkg/db/fullclient"
+	"app/market/pkg/db/pg"
+	"app/market/pkg/db/redise"
+	"context"
+	"log"
+)
 
-// 	dbClient  db.Client
-// 	txManager db.TxManager
-// }
+type serviceProvider struct {
+	pgConfig      config.PgConfig
+	httpConfig    config.HTTPConfig
+	soursesConfig config.Sourses
+	redisConfig   config.RedisConfig
 
-// func (s *serviceProvider) PGConfig() config.PgConfig {
-// 	if s.pgConfig == nil {
-// 		cfg, err := config.NewPGConfig()
-// 		if err != nil {
-// 			log.Fatalf("failed to get pg config: %s", err.Error())
-// 		}
+	dbClient  db.FullClient
+	txManager db.TxManager
+}
 
-// 		s.pgConfig = cfg
-// 	}
+func (s *serviceProvider) PGConfig() config.PgConfig {
+	if s.pgConfig == nil {
+		cfg, err := config.NewPGConfig()
+		if err != nil {
+			log.Fatalf("failed to get pg config: %s", err.Error())
+		}
 
-// 	return s.pgConfig
-// }
+		s.pgConfig = cfg
+	}
 
-// func (s *serviceProvider) HTTPConfig() config.HTTPConfig {
-// 	if s.httpConfig == nil {
-// 		cfg, err := config.NewHTTPConfig()
-// 		if err != nil {
-// 			log.Fatalf("failed to get http config: %s", err.Error())
-// 		}
+	return s.pgConfig
+}
 
-// 		s.httpConfig = cfg
-// 	}
+func (s *serviceProvider) HTTPConfig() config.HTTPConfig {
+	if s.httpConfig == nil {
+		cfg, err := config.NewHTTPConfig()
+		if err != nil {
+			log.Fatalf("failed to get http config: %s", err.Error())
+		}
 
-// 	return s.httpConfig
-// }
+		s.httpConfig = cfg
+	}
 
-// func (s *serviceProvider) SoursConfig() config.Sourses {
-// 	if s.soursesConfig == nil {
-// 		cfg, err := config.NewSourses()
-// 		if err != nil {
-// 			log.Fatalf("failed to get sours config: %s", err.Error())
-// 		}
+	return s.httpConfig
+}
 
-// 		s.soursesConfig = cfg
-// 	}
+func (s *serviceProvider) SoursConfig() config.Sourses {
+	if s.soursesConfig == nil {
+		cfg, err := config.NewSourses()
+		if err != nil {
+			log.Fatalf("failed to get sours config: %s", err.Error())
+		}
 
-// 	return s.soursesConfig
-// }
+		s.soursesConfig = cfg
+	}
 
-// func (s *serviceProvider) RedisConfig() config.RedisConfig {
-// 	if s.redisConfig == nil {
-// 		cfg, err := config.NewRedisConfig()
-// 		if err != nil {
-// 			log.Fatalf("failed to get redis config: %s", err.Error())
-// 		}
+	return s.soursesConfig
+}
 
-// 		s.redisConfig = cfg
-// 	}
+func (s *serviceProvider) RedisConfig() config.RedisConfig {
+	if s.redisConfig == nil {
+		cfg, err := config.NewRedisConfig()
+		if err != nil {
+			log.Fatalf("failed to get redis config: %s", err.Error())
+		}
 
-// 	return s.redisConfig
-// }
+		s.redisConfig = cfg
+	}
 
-// func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
-// 	if s.dbClient == nil {
-// 		cl, err := pg.New(ctx, s.PGConfig().DSN())
-// 		if err != nil {
-// 			log.Fatalf("failed to create db client: %v", err)
-// 		}
+	return s.redisConfig
+}
 
-// 		err = cl.DB().Ping(ctx)
-// 		if err != nil {
-// 			log.Fatalf("ping error: %s", err.Error())
-// 		}
-// 		closer.Add(cl.Close)
+func (s *serviceProvider) DBClient(ctx context.Context) db.FullClient {
+	if s.dbClient == nil {
+		pgClient, err := pg.NewBdClient(ctx, s.PGConfig().DSN())
 
-// 		s.dbClient = cl
-// 	}
+		if err != nil {
+			log.Fatalf("failed to create db client: %v", err)
+		}
 
-// 	return s.dbClient
-// }
+		err = pgClient.DB().Ping(ctx)
 
-// func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
-// 	if s.txManager == nil {
-// 		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
-// 	}
+		if err != nil {
+			log.Fatalf("ping error: %s", err.Error())
+		}
 
-// 	return s.txManager
-// }
+		closer.Add(pgClient.Close)
+
+		redisClient, err := redise.NewRediseClient(ctx, s.redisConfig.DSN())
+
+		if err != nil {
+			log.Fatalf("failed to create redis client: %v", err)
+		}
+
+		err = redisClient.RedisDB().Ping(ctx)
+
+		if err != nil {
+			log.Fatalf("ping error: %s", err.Error())
+		}
+
+		closer.Add(redisClient.Close)
+
+		fullcl := fullclient.NewFullClient(pgClient, redisClient)
+
+		return fullcl
+
+	}
+
+	return s.dbClient
+}

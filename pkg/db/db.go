@@ -10,6 +10,11 @@ import (
 
 type Handler func(ctx context.Context) error
 
+type FullClient interface {
+	PgDb() PgClient
+	RedisDb() RedisClient
+}
+
 type PgClient interface {
 	DB() DB
 	Close() error

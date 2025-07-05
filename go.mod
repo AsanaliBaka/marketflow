@@ -3,8 +3,10 @@ module app/market
 go 1.22.2
 
 require (
+	github.com/gomodule/redigo v1.9.2
 	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgx/v4 v4.18.3
+	github.com/redis/go-redis/v9 v9.11.0
 )
 
 require (
@@ -17,7 +19,6 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgtype v1.14.0 // indirect
 	github.com/jackc/puddle v1.3.0 // indirect
-	github.com/redis/go-redis/v9 v9.11.0 // indirect
 	golang.org/x/crypto v0.20.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 )

@@ -8,13 +8,6 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// type Redis interface {
-// 	Set(ctx context.Context, key string, value interface{}) error
-// 	Get(ctx context.Context, key string) (string, error)
-// 	Del(ctx context.Context, key string) error
-// 	Exists(ctx context.Context, key string) (bool, error)
-// }
-
 type redisDb struct {
 	redisDb *redis.Client
 }

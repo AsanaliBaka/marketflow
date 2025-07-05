@@ -10,10 +10,13 @@ import (
 
 type Handler func(ctx context.Context) error
 
-type Client interface {
+type PgClient interface {
 	DB() DB
 	Close() error
+}
+type RedisClient interface {
 	RedisDB() RedisDB
+	Close() error
 }
 
 type TxManager interface {

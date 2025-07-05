@@ -27,20 +27,13 @@ services:
   exchange1:
     image: exchange1:latest
     container_name: exchange1
-    depends_on:
-      - pg-local
-      - redis
+ 
 
   exchange2:
     image: exchange2:latest
     container_name: exchange2
-    depends_on:
-      - pg-local
-      - redis
-
+  
   exchange3:
     image: exchange3:latest
     container_name: exchange3
-    depends_on:
-      - pg-local
-      - redis
+ 

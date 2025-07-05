@@ -7,6 +7,7 @@ import (
 	"app/market/pkg/db/fullclient"
 	"app/market/pkg/db/pg"
 	"app/market/pkg/db/redise"
+	"app/market/pkg/db/transaction"
 	"context"
 	"log"
 )
@@ -19,6 +20,10 @@ type serviceProvider struct {
 
 	dbClient  db.FullClient
 	txManager db.TxManager
+}
+
+func newServiceProvider() *serviceProvider {
+	return &serviceProvider{}
 }
 
 func (s *serviceProvider) PGConfig() config.PgConfig {
@@ -110,4 +115,12 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.FullClient {
 	}
 
 	return s.dbClient
+}
+
+func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
+	if s.txManager == nil {
+		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).PgDb().DB())
+	}
+
+	return s.txManager
 }

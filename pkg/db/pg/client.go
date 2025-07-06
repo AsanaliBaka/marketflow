@@ -12,7 +12,7 @@ type pgClient struct {
 	masterDBC db.DB
 }
 
-func NewBdClient(ctx context.Context, dsn string) (db.PgClient, error) {
+func NewPostgresClient(ctx context.Context, dsn string) (db.PgClient, error) {
 	dbc, err := pgxpool.Connect(ctx, dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to db: %v", err)

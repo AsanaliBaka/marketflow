@@ -2,17 +2,21 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"os"
 )
 
 const (
-	sours1 = "SOURS_1"
-	sours2 = "SOURS_2"
-	sours3 = "SOURS_3"
+	sours1  = "SOURS_1"
+	sours2  = "SOURS_2"
+	sours3  = "SOURS_3"
+	hostenv = "HTTP_HOST"
 )
 
 type Sourses interface {
-	ConnectSourse() SourseSet
+	ConnectSourse1() string
+	ConnectSourse2() string
+	ConnectSourse3() string
 }
 type allSourses struct {
 	sourses SourseSet
@@ -21,6 +25,7 @@ type SourseSet struct {
 	sours1 string
 	sours2 string
 	sours3 string
+	host   string
 }
 
 func NewSourses() (Sourses, error) {
@@ -40,15 +45,29 @@ func NewSourses() (Sourses, error) {
 		return nil, fmt.Errorf("%s env not found", sours3)
 	}
 
+	host := os.Getenv(hostenv)
+
+	if len(host) == 0 {
+		return nil, fmt.Errorf("%s env not found", hostenv)
+
+	}
+
 	return &allSourses{
 		sourses: SourseSet{
 			sours1: s1,
 			sours2: s2,
 			sours3: s3,
+			host:   host,
 		},
 	}, nil
 }
 
-func (s *allSourses) ConnectSourse() SourseSet {
-	return s.sourses
+func (s *allSourses) ConnectSourse1() string {
+	return net.JoinHostPort(s.sourses.host, s.sourses.sours1)
+}
+func (s *allSourses) ConnectSourse2() string {
+	return net.JoinHostPort(s.sourses.host, s.sourses.sours2)
+}
+func (s *allSourses) ConnectSourse3() string {
+	return net.JoinHostPort(s.sourses.host, s.sourses.sours3)
 }

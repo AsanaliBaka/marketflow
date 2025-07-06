@@ -4,6 +4,8 @@ export
 run:
 	go run main.go
 
+	
+
 load-images:
 	docker load -i data/exchange1_amd64.tar
 	docker load -i data/exchange2_amd64.tar

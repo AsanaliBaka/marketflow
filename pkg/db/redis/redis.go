@@ -1,4 +1,4 @@
-package redise
+package redis
 
 import (
 	"app/market/pkg/db"
@@ -8,22 +8,22 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type redisDb struct {
+type redisDB struct {
 	redisDb *redis.Client
 }
 
 func NewRedise(rDB *redis.Client) db.RedisDB {
-	return &redisDb{
+	return &redisDB{
 		redisDb: rDB,
 	}
 }
 
-func (r *redisDb) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
+func (r *redisDB) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
 
 	return r.redisDb.Set(ctx, key, value, expiration).Err()
 }
 
-func (r *redisDb) Get(ctx context.Context, key string) (string, error) {
+func (r *redisDB) Get(ctx context.Context, key string) (string, error) {
 	result, err := r.redisDb.Get(ctx, key).Result()
 
 	if err != nil {
@@ -33,7 +33,7 @@ func (r *redisDb) Get(ctx context.Context, key string) (string, error) {
 	return result, nil
 
 }
-func (r *redisDb) Del(ctx context.Context, key string) error {
+func (r *redisDB) Del(ctx context.Context, key string) error {
 	_, err := r.redisDb.Del(ctx, key).Result()
 
 	if err != nil {
@@ -43,7 +43,7 @@ func (r *redisDb) Del(ctx context.Context, key string) error {
 	return nil
 
 }
-func (r *redisDb) Exists(ctx context.Context, key string) (bool, error) {
+func (r *redisDB) Exists(ctx context.Context, key string) (bool, error) {
 	result, err := r.redisDb.Exists(ctx, key).Result()
 
 	if err != nil {
@@ -53,10 +53,10 @@ func (r *redisDb) Exists(ctx context.Context, key string) (bool, error) {
 	return result == 1, nil
 }
 
-func (r *redisDb) Ping(ctx context.Context) error {
+func (r *redisDB) Ping(ctx context.Context) error {
 	return r.redisDb.Ping(ctx).Err()
 }
 
-func (r *redisDb) Close() {
+func (r *redisDB) Close() {
 	r.redisDb.Close()
 }

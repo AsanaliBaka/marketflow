@@ -3,10 +3,12 @@ package app
 import (
 	"app/market/internal/config"
 	"app/market/pkg/closer"
+	"app/market/pkg/data"
+	"app/market/pkg/data/sourse"
 	"app/market/pkg/db"
 	"app/market/pkg/db/fullclient"
 	"app/market/pkg/db/pg"
-	"app/market/pkg/db/redise"
+	"app/market/pkg/db/redis"
 	"app/market/pkg/db/transaction"
 	"context"
 	"log"
@@ -18,8 +20,9 @@ type serviceProvider struct {
 	soursesConfig config.Sourses
 	redisConfig   config.RedisConfig
 
-	dbClient  db.FullClient
-	txManager db.TxManager
+	soursClient []data.SourseClient
+	dbClient    db.FullClient
+	txManager   db.TxManager
 }
 
 func newServiceProvider() *serviceProvider {
@@ -80,7 +83,7 @@ func (s *serviceProvider) RedisConfig() config.RedisConfig {
 
 func (s *serviceProvider) DBClient(ctx context.Context) db.FullClient {
 	if s.dbClient == nil {
-		pgClient, err := pg.NewBdClient(ctx, s.PGConfig().DSN())
+		pgClient, err := pg.NewPostgresClient(ctx, s.PGConfig().DSN())
 
 		if err != nil {
 			log.Fatalf("failed to create db client: %v", err)
@@ -94,7 +97,7 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.FullClient {
 
 		closer.Add(pgClient.Close)
 
-		redisClient, err := redise.NewRediseClient(ctx, s.redisConfig.DSN())
+		redisClient, err := redis.NewRedisClient(ctx, s.redisConfig.DSN())
 
 		if err != nil {
 			log.Fatalf("failed to create redis client: %v", err)
@@ -117,6 +120,38 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.FullClient {
 	return s.dbClient
 }
 
+func (s *serviceProvider) SoursClient(ctx context.Context) []data.SourseClient {
+	if s.soursClient == nil {
+		s1, err := sourse.NewSourseClient(ctx, s.soursesConfig.ConnectSourse1())
+
+		if err != nil {
+			log.Fatalf("failed create connection %s", s.soursesConfig.ConnectSourse1())
+		}
+
+		closer.Add(s1.Close)
+
+		s2, err := sourse.NewSourseClient(ctx, s.soursesConfig.ConnectSourse2())
+
+		if err != nil {
+			log.Fatalf("failed create connection %s", s.soursesConfig.ConnectSourse2())
+		}
+
+		closer.Add(s2.Close)
+
+		s3, err := sourse.NewSourseClient(ctx, s.soursesConfig.ConnectSourse3())
+
+		if err != nil {
+			log.Fatalf("failed create connection %s", s.soursesConfig.ConnectSourse3())
+		}
+
+		closer.Add(s3.Close)
+
+		return []data.SourseClient{s1, s2, s3}
+
+	}
+
+	return s.soursClient
+}
 func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	if s.txManager == nil {
 		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).PgDb().DB())

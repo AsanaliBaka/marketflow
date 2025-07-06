@@ -1,20 +1,24 @@
 package main
 
 import (
-	"fmt"
-	"net"
-	"time"
+	"app/market/internal/app"
+	"context"
+	"log"
 )
 
 func main() {
-	// 1. Подключение с таймаутом
-	conn, err := net.DialTimeout("tcp", "localhost:40102", time.Millisecond)
-	if err != nil {
-		fmt.Println("Ошибка подключения:", err)
-		return
-	}
-	defer conn.Close()
+	ctx := context.Background()
 
-	// 5. Выводим и завершаем работу
+	a, err := app.NewApp(ctx)
+
+	if err != nil {
+		log.Fatalf("failed to init app: %s", err.Error())
+	}
+
+	err = a.Run()
+
+	if err != nil {
+		log.Fatalf("failed to run app: %s", err.Error())
+	}
 
 }

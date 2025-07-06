@@ -2,7 +2,7 @@ include .env
 export
 
 run:
-	go run main.go
+	go run cmd/http_server/main.go
 
 	
 

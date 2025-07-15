@@ -18,3 +18,8 @@ run-images:
 
 rm-docker:
 	docker rmi -f $$(docker images -q)
+
+run-ex-docker:
+	docker start exchange1
+	docker start exchange2
+	docker start exchange3

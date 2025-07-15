@@ -26,3 +26,7 @@ func NewSourseConnect(addr string) domain.SourseTCPClient {
 func (s *sourseTCPClient) Close() error {
 	return s.conn.Close()
 }
+
+func (s *sourseTCPClient) Sours() net.Conn {
+	return s.conn
+}

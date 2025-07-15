@@ -14,14 +14,16 @@ import (
 )
 
 type tickerService struct {
-	tickerRepo repo.TickerRepository
-	soursConn  domain.SourseTCPClient
+	tickerRedisRepo repo.TickerRedisRepository
+	soursConn       domain.SourseTCPClient
+	tickerPGRepo    repo.TickerPGRepository
 }
 
-func NewTickerService(tikcerConn repo.TickerRepository, soursConn domain.SourseTCPClient) service.TickerService {
+func NewTickerService(tikcerRepoConn repo.TickerRedisRepository, soursConn domain.SourseTCPClient, tickerPgConn repo.TickerPGRepository) service.TickerService {
 	return &tickerService{
-		tickerRepo: tikcerConn,
-		soursConn:  soursConn,
+		tickerRedisRepo: tikcerRepoConn,
+		soursConn:       soursConn,
+		tickerPGRepo:    tickerPgConn,
 	}
 }
 
@@ -56,7 +58,7 @@ func (t *tickerService) Process(ctx context.Context, resourceMode string) error 
 				continue
 			}
 			fmt.Println(d)
-			err := t.tickerRepo.RedisSet(ctx, &d, time.Minute)
+			err := t.tickerRedisRepo.RedisSet(ctx, &d, time.Minute)
 			if err != nil {
 				log.Println("redis set error:", err)
 			}
@@ -66,3 +68,13 @@ func (t *tickerService) Process(ctx context.Context, resourceMode string) error 
 		buffer = lines[len(lines)-1]
 	}
 }
+
+// func (t *tickerService) StorePriceStats(ctx context.Context, symbol string) error {
+// 	avgPrice, err := t.tickerRedisRepo.GetAvgPrice(ctx, symbol)
+
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }

@@ -33,6 +33,8 @@ func main() {
 		}
 	}()
 
+	data, _ := tickerRepo.GetAvgPrice(ctx, "SOLUSDT")
+	fmt.Println(data)
 	// Блокировка main, чтобы программа не завершилась
 	select {}
 

@@ -11,17 +11,17 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type tickerRepository struct {
+type tickerRedisRepository struct {
 	redistickerRepositoryConn *redis.Client
 }
 
-func NewTickerRepository(conn *redis.Client) repo.TickerRepository {
-	return &tickerRepository{
+func NewTickerRepository(conn *redis.Client) repo.TickerRedisRepository {
+	return &tickerRedisRepository{
 		redistickerRepositoryConn: conn,
 	}
 }
 
-func (t *tickerRepository) RedisSet(ctx context.Context, data *entity.TickerData, ttl time.Duration) error {
+func (t *tickerRedisRepository) RedisSet(ctx context.Context, data *entity.TickerData, ttl time.Duration) error {
 
 	key := fmt.Sprintf("ticker:%s", data.Symbol)
 
@@ -49,7 +49,7 @@ func (t *tickerRepository) RedisSet(ctx context.Context, data *entity.TickerData
 	return nil
 }
 
-func (t *tickerRepository) GetMaxPrice(ctx context.Context, symbol string) (float64, error) {
+func (t *tickerRedisRepository) GetMaxPrice(ctx context.Context, symbol string) (float64, error) {
 	key := fmt.Sprintf("ticker:%s", symbol)
 
 	result, err := t.redistickerRepositoryConn.ZRevRangeWithScores(ctx, key, 0, 0).Result()
@@ -65,7 +65,7 @@ func (t *tickerRepository) GetMaxPrice(ctx context.Context, symbol string) (floa
 	return result[0].Score, nil
 }
 
-func (t *tickerRepository) GetMinPrice(ctx context.Context, symbol string) (float64, error) {
+func (t *tickerRedisRepository) GetMinPrice(ctx context.Context, symbol string) (float64, error) {
 	key := fmt.Sprintf("ticker:%s", symbol)
 
 	result, err := t.redistickerRepositoryConn.ZRangeWithScores(ctx, key, 0, 0).Result()
@@ -81,7 +81,7 @@ func (t *tickerRepository) GetMinPrice(ctx context.Context, symbol string) (floa
 	return result[0].Score, nil
 }
 
-func (t *tickerRepository) GetAvgPrice(ctx context.Context, symbol string) (float64, error) {
+func (t *tickerRedisRepository) GetAvgPrice(ctx context.Context, symbol string) (float64, error) {
 	key := fmt.Sprintf("ticker:%s", symbol)
 
 	result, err := t.redistickerRepositoryConn.ZRangeWithScores(ctx, key, 0, -1).Result()

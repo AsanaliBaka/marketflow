@@ -2,7 +2,7 @@ package domain
 
 import (
 	"context"
-	"net"
+	"io"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/redis/go-redis/v9"
@@ -22,5 +22,12 @@ type RedisClient interface {
 
 type SourseTCPClient interface {
 	Close() error
-	Sours() net.Conn
+	Sours() io.ReadCloser
+	SourceExchange() string
+}
+
+type TestSourseTCPClient interface {
+	Close() error
+	Sours() io.ReadCloser
+	SourceExchange() string
 }

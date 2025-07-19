@@ -2,12 +2,14 @@ package adapters
 
 import (
 	"app/market/internal/domain"
+	"io"
 	"log"
 	"net"
 )
 
 type sourseTCPClient struct {
-	conn net.Conn
+	conn      net.Conn
+	soursType string
 }
 
 func NewSourseConnect(addr string) domain.SourseTCPClient {
@@ -18,7 +20,8 @@ func NewSourseConnect(addr string) domain.SourseTCPClient {
 	}
 
 	return &sourseTCPClient{
-		conn: conn,
+		conn:      conn,
+		soursType: addr,
 	}
 
 }
@@ -27,6 +30,10 @@ func (s *sourseTCPClient) Close() error {
 	return s.conn.Close()
 }
 
-func (s *sourseTCPClient) Sours() net.Conn {
+func (s *sourseTCPClient) Sours() io.ReadCloser {
 	return s.conn
+}
+
+func (s *sourseTCPClient) SourceExchange() string {
+	return s.soursType
 }

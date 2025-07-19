@@ -14,4 +14,5 @@ type TickerRedisRepository interface {
 }
 
 type TickerPGRepository interface {
+	PutAggregatedBatch(ctx context.Context, batch []entity.AggregatedPrice) error
 }

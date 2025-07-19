@@ -122,6 +122,13 @@ func (t *tickerService) StorePriceStats(ctx context.Context) error {
 	symbols := []string{"BTCUSDT", "DOGEUSDT", "TONUSDT", "SOLUSDT", "ETHUSDT"}
 
 	var batch []entity.AggregatedPrice
+	var exchange string
+
+	if t.currentSourceName == tcpConn {
+		exchange = t.soursConn.SourceExchange()
+	} else if t.currentSourceName == generateConn {
+		exchange = t.testConn.SourceExchange()
+	}
 
 	for _, symbol := range symbols {
 		avgPrice, err := t.tickerRedisRepo.GetAvgPrice(ctx, symbol)
@@ -144,7 +151,7 @@ func (t *tickerService) StorePriceStats(ctx context.Context) error {
 
 		data := entity.AggregatedPrice{
 			PairName:     symbol,
-			Exchange:     t.currentSourceName,
+			Exchange:     exchange,
 			Timestamp:    time.Now(),
 			AveragePrice: avgPrice,
 			MaxPrice:     maxPrice,
